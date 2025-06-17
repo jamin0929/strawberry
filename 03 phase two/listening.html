@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词找寻游戏</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a4a4a;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .score {
+            text-align: center;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #2196F3;
+            font-weight: bold;
+        }
+
+        .buttons-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .word-button {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1.3em;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            font-weight: bold;
+        }
+
+        .word-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .word-button:active {
+            transform: translateY(0);
+        }
+
+        .text-container {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #e0e0e0;
+            font-size: 1.4em;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .word {
+            padding: 3px 6px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 2px;
+        }
+
+        .word:hover {
+            background: #ffe6e6;
+            transform: scale(1.05);
+        }
+
+        .word.correct {
+            background: #4CAF50;
+            color: white;
+            animation: bounce 0.6s ease;
+        }
+
+        .word.wrong {
+            background: #f44336;
+            color: white;
+            animation: shake 0.6s ease;
+        }
+
+        .word.target {
+            background: #FFD700;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+
+        .message {
+            text-align: center;
+            font-size: 1.3em;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .game-complete {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            font-size: 1.5em;
+        }
+
+        @media (max-width: 600px) {
+            .game-container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .word-button {
+                padding: 12px 20px;
+                font-size: 1.1em;
+            }
+            
+            .text-container {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎯 单词找寻游戏</h1>
+        
+        <div class="instructions">
+            点击下方按钮听单词发音，然后在短文中找到这个单词并点击它！
+        </div>
+
+        <div class="score">
+            得分: <span id="score">0</span> / 5
+        </div>
+
+        <div class="buttons-container">
+            <button class="word-button" onclick="playWord('sunny')">🔊 播放单词 1</button>
+            <button class="word-button" onclick="playWord('rainy')">🔊 播放单词 2</button>
+            <button class="word-button" onclick="playWord('cloudy')">🔊 播放单词 3</button>
+            <button class="word-button" onclick="playWord('snowy')">🔊 播放单词 4</button>
+            <button class="word-button" onclick="playWord('windy')">🔊 播放单词 5</button>
+        </div>
+
+        <div class="text-container" id="textContainer">
+            <span class="word" onclick="checkWord(this, 'I')">I</span>
+            <span class="word" onclick="checkWord(this, 'look')">look</span>
+            <span class="word" onclick="checkWord(this, 'out')">out</span>
+            <span class="word" onclick="checkWord(this, 'my')">my</span>
+            <span class="word" onclick="checkWord(this, 'window')">window</span>
+            <span class="word" onclick="checkWord(this, 'every')">every</span>
+            <span class="word" onclick="checkWord(this, 'day')">day</span>.<br><br>
+            
+            <span class="word" onclick="checkWord(this, 'Today')">Today</span>
+            <span class="word" onclick="checkWord(this, 'is')">is</span>
+            <span class="word" onclick="checkWord(this, 'sunny')">sunny</span>
+            <span class="word" onclick="checkWord(this, 'and')">and</span>
+            <span class="word" onclick="checkWord(this, 'bright')">bright</span>.<br><br>
+            
+            <span class="word" onclick="checkWord(this, 'Yesterday')">Yesterday</span>
+            <span class="word" onclick="checkWord(this, 'was')">was</span>
+            <span class="word" onclick="checkWord(this, 'rainy')">rainy</span>
+            <span class="word" onclick="checkWord(this, 'with')">with</span>
+            <span class="word" onclick="checkWord(this, 'big')">big</span>
+            <span class="word" onclick="checkWord(this, 'drops')">drops</span>.<br><br>
+            
+            <span class="word" onclick="checkWord(this, 'Sometimes')">Sometimes</span>
+            <span class="word" onclick="checkWord(this, 'it\'s')">it's</span>
+            <span class="word" onclick="checkWord(this, 'cloudy')">cloudy</span>
+            <span class="word" onclick="checkWord(this, 'and')">and</span>
+            <span class="word" onclick="checkWord(this, 'gray')">gray</span>.<br><br>
+            
+            <span class="word" onclick="checkWord(this, 'Winter')">Winter</span>
+            <span class="word" onclick="checkWord(this, 'brings')">brings</span>
+            <span class="word" onclick="checkWord(this, 'snowy')">snowy</span>
+            <span class="word" onclick="checkWord(this, 'white')">white</span>
+            <span class="word" onclick="checkWord(this, 'days')">days</span>.<br><br>
+            
+            <span class="word" onclick="checkWord(this, 'Spring')">Spring</span>
+            <span class="word" onclick="checkWord(this, 'has')">has</span>
+            <span class="word" onclick="checkWord(this, 'windy')">windy</span>
+            <span class="word" onclick="checkWord(this, 'afternoons')">afternoons</span>
+            <span class="word" onclick="checkWord(this, 'that')">that</span>
+            <span class="word" onclick="checkWord(this, 'blow')">blow</span>
+            <span class="word" onclick="checkWord(this, 'my')">my</span>
+            <span class="word" onclick="checkWord(this, 'hair')">hair</span>.
+        </div>
+
+        <div id="message" class="message" style="display: none;"></div>
+    </div>
+
+    <script>
+        let currentWord = '';
+        let score = 0;
+        let foundWords = new Set();
+        const targetWords = ['sunny', 'rainy', 'cloudy', 'snowy', 'windy'];
+
+        function playWord(word) {
+            currentWord = word.toLowerCase();
+            
+            // 清除之前的高亮
+            document.querySelectorAll('.word').forEach(w => {
+                w.classList.remove('target');
+            });
+
+            // 播放发音
+            playAudio(word);
+            
+            showMessage(`请仔细听发音，然后在短文中找到这个单词！`, 'info');
+        }
+
+        function playAudio(wordToRead) {
+            const audioUrls = [
+                `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${wordToRead}--_gb_1.mp3`,
+                `http://dict.youdao.com/dictvoice?audio=${wordToRead}&type=2`,
+                `http://dict.youdao.com/dictvoice?audio=${wordToRead}&type=1`,
+                `http://audio.dict.cn/fuTd30MS634f38bd2f5bb68b633677b83cbebc26.mp3?t=${wordToRead}`
+            ];
+
+            let audioIndex = 0;
+            
+            function tryPlayAudio() {
+                if (audioIndex >= audioUrls.length) {
+                    console.log('所有音频源都无法播放');
+                    return;
+                }
+
+                const audio = new Audio(audioUrls[audioIndex]);
+                
+                audio.onloadeddata = function() {
+                    audio.play().catch(e => {
+                        console.log(`音频源 ${audioIndex + 1} 播放失败:`, e);
+                        audioIndex++;
+                        tryPlayAudio();
+                    });
+                };
+                
+                audio.onerror = function() {
+                    console.log(`音频源 ${audioIndex + 1} 加载失败`);
+                    audioIndex++;
+                    tryPlayAudio();
+                };
+            }
+            
+            tryPlayAudio();
+        }
+
+        function checkWord(element, word) {
+            if (!currentWord) {
+                showMessage('请先点击按钮听单词发音！', 'error');
+                return;
+            }
+
+            // 清除所有高亮
+            document.querySelectorAll('.word').forEach(w => {
+                w.classList.remove('target');
+            });
+
+            if (word.toLowerCase() === currentWord && !foundWords.has(currentWord)) {
+                // 正确答案
+                element.classList.add('correct');
+                foundWords.add(currentWord);
+                score++;
+                document.getElementById('score').textContent = score;
+                
+                showMessage(`太棒了！你找对了！`, 'success');
+                
+                if (score === 5) {
+                    setTimeout(() => {
+                        showMessage('🎉 恭喜你！你已经找到了所有单词！游戏完成！', 'game-complete');
+                    }, 1500);
+                }
+                
+                currentWord = '';
+            } else if (word.toLowerCase() === currentWord && foundWords.has(currentWord)) {
+                showMessage(`你已经找到过这个单词了！请选择其他单词。`, 'error');
+            } else {
+                // 错误答案
+                element.classList.add('wrong');
+                setTimeout(() => {
+                    element.classList.remove('wrong');
+                }, 600);
+                
+                showMessage(`不对哦！请再仔细听一下发音`, 'error');
+            }
+        }
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                if (type !== 'game-complete') {
+                    messageDiv.style.display = 'none';
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
