@@ -1,0 +1,5 @@
+            const audioUrls = [
+                `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${wordToRead}--_gb_1.mp3`,
+                `http://dict.youdao.com/dictvoice?audio=${wordToRead}&type=2`,
+                `http://dict.youdao.com/dictvoice?audio=${wordToRead}&type=1`,
+                `http://audio.dict.cn/fuTd30MS634f38bd2f5bb68b633677b83cbebc26.mp3?t=${wordToRead}`
