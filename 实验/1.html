@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词发音识别游戏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .game-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .round-info {
+            text-align: center;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .speaker-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .speaker-btn {
+            background: #ff6b6b;
+            border: none;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+        }
+        .speaker-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+        }
+        .speaker-btn:active {
+            transform: scale(0.95);
+        }
+        .sentence {
+            font-size: 1.5em;
+            text-align: center;
+            margin: 30px 0;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .word {
+            cursor: pointer;
+            padding: 5px 8px;
+            margin: 0 3px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .word:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        .correct {
+            background: #4ecdc4 !important;
+            color: white;
+            animation: bounce 0.6s ease;
+        }
+        .wrong {
+            background: #ff6b6b !important;
+            color: white;
+            animation: shake 0.5s ease;
+        }
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .score {
+            text-align: center;
+            font-size: 1.3em;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .next-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 25px;
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.4);
+        }
+        .next-btn:hover {
+            background: #45b7aa;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(78, 205, 196, 0.6);
+        }
+        .game-over {
+            text-align: center;
+            font-size: 1.5em;
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 15px;
+        }
+        .restart-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+        .restart-btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+        .loading {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+            opacity: 0.8;
+        }
+        .error {
+            text-align: center;
+            background: rgba(255, 107, 107, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎵 单词发音识别游戏</h1>
+        
+        <div class="loading" id="loading">
+            🔄 正在加载题目数据...
+        </div>
+        
+        <div class="error" id="error" style="display: none;">
+            ❌ 加载失败，已切换到默认题目
+        </div>
+        
+        <div id="gameContent" style="display: none;">
+            <div class="round-info">
+                <span>第 <span id="currentRound">1</span> 轮 / 共 <span id="totalRounds">3</span> 轮</span>
+            </div>
+            
+            <div class="speaker-container">
+                <button class="speaker-btn" id="speakerBtn" onclick="playAudio()">🔊</button>
+                <p>点击喇叭听发音，然后在句子中找到这个单词</p>
+                <p style="font-size: 0.9em; opacity: 0.8;">💡 题目数据来自在线更新</p>
+            </div>
+            
+            <div class="sentence" id="sentence"></div>
+            
+            <div class="score">
+                正确: <span id="correct">0</span> | 错误: <span id="wrong">0</span>
+            </div>
+            
+            <button class="next-btn" id="nextBtn" onclick="nextRound()" style="display: none;">下一轮</button>
+            
+            <div class="game-over" id="gameOver" style="display: none;">
+                <h2>🎉 游戏结束！</h2>
+                <p>最终得分: <span id="finalScore"></span></p>
+                <button class="restart-btn" onclick="restartGame()">重新开始</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameData = [];
+        let currentRoundIndex = 0;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let currentWord = '';
+        let roundAnswered = false;
+
+        // 从GitHub获取context.txt文件内容
+        async function parseContextData() {
+            const githubRawUrl = 'https://raw.githubusercontent.com/jamin0929/strawberry/main/context.txt';
+            
+            try {
+                document.getElementById('loading').style.display = 'block';
+                
+                // 使用fetch API获取GitHub上的文件内容
+                const response = await fetch(githubRawUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const contextContent = await response.text();
+                const lines = contextContent.trim().split('\n');
+                gameData = [];
+                
+                for (let i = 0; i < lines.length; i += 2) {
+                    if (i + 1 < lines.length) {
+                        const word = lines[i].trim();
+                        const sentence = lines[i + 1].trim();
+                        if (word && sentence) {
+                            gameData.push({
+                                word: word,
+                                sentence: sentence
+                            });
+                        }
+                    }
+                }
+                
+                if (gameData.length === 0) {
+                    throw new Error('没有找到有效的题目数据');
+                }
+                
+                console.log(`成功加载 ${gameData.length} 道题目`);
+                
+                // 隐藏加载提示，显示游戏内容
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('gameContent').style.display = 'block';
+                
+                // 开始游戏
+                displaySentence();
+                
+            } catch (error) {
+                console.error('加载在线数据失败:', error);
+                
+                // 显示错误信息
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                
+                // 使用默认内容作为备选
+                const defaultContent = `good
+You are a good girl
+like
+I like to eat sandwich
+look
+I look at a black dog
+apple
+The apple is red and sweet
+book
+Please give me that book
+water
+I need some water to drink`;
+                
+                const lines = defaultContent.trim().split('\n');
+                gameData = [];
+                
+                for (let i = 0; i < lines.length; i += 2) {
+                    if (i + 1 < lines.length) {
+                        gameData.push({
+                            word: lines[i].trim(),
+                            sentence: lines[i + 1].trim()
+                        });
+                    }
+                }
+                
+                // 3秒后隐藏错误信息，显示游戏内容
+                setTimeout(() => {
+                    document.getElementById('error').style.display = 'none';
+                    document.getElementById('gameContent').style.display = 'block';
+                    displaySentence();
+                }, 3000);
+            }
+        }
+
+        // 播放音频
+        function playAudio() {
+            if (gameData.length === 0) return;
+            
+            const word = gameData[currentRoundIndex].word;
+            const audioUrls = [
+                `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${word}--_gb_1.mp3`,
+                `http://dict.youdao.com/dictvoice?audio=${word}&type=2`,
+                `http://dict.youdao.com/dictvoice?audio=${word}&type=1`
+            ];
+            
+            // 尝试播放第一个音频源
+            const audio = new Audio(audioUrls[0]);
+            audio.play().catch(() => {
+                // 如果第一个失败，尝试第二个
+                const audio2 = new Audio(audioUrls[1]);
+                audio2.play().catch(() => {
+                    // 如果第二个也失败，尝试第三个
+                    const audio3 = new Audio(audioUrls[2]);
+                    audio3.play().catch(() => {
+                        console.log('所有音频源都无法播放，请检查网络连接');
+                        // 可以在这里添加一个提示用户的消息
+                    });
+                });
+            });
+            
+            // 添加按钮动画
+            const btn = document.getElementById('speakerBtn');
+            btn.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                btn.style.transform = 'scale(1)';
+            }, 150);
+        }
+
+        // 显示当前轮的句子
+        function displaySentence() {
+            if (currentRoundIndex >= gameData.length) {
+                endGame();
+                return;
+            }
+            
+            const data = gameData[currentRoundIndex];
+            currentWord = data.word.toLowerCase();
+            roundAnswered = false;
+            
+            // 更新轮数显示
+            document.getElementById('currentRound').textContent = currentRoundIndex + 1;
+            document.getElementById('totalRounds').textContent = gameData.length;
+            
+            // 将句子分割成单词并创建可点击的元素
+            const words = data.sentence.split(' ');
+            const sentenceElement = document.getElementById('sentence');
+            sentenceElement.innerHTML = '';
+            
+            words.forEach((word, index) => {
+                const wordElement = document.createElement('span');
+                wordElement.className = 'word';
+                wordElement.textContent = word;
+                wordElement.onclick = () => checkWord(word, wordElement);
+                sentenceElement.appendChild(wordElement);
+                
+                // 添加空格
+                if (index < words.length - 1) {
+                    sentenceElement.appendChild(document.createTextNode(' '));
+                }
+            });
+            
+            // 隐藏下一轮按钮
+            document.getElementById('nextBtn').style.display = 'none';
+        }
+
+        // 检查点击的单词是否正确
+        function checkWord(clickedWord, element) {
+            if (roundAnswered) return;
+            
+            // 清理单词（去除标点符号）
+            const cleanWord = clickedWord.toLowerCase().replace(/[.,!?;]/g, '');
+            
+            if (cleanWord === currentWord) {
+                element.classList.add('correct');
+                correctCount++;
+                roundAnswered = true;
+                setTimeout(() => {
+                    document.getElementById('nextBtn').style.display = 'block';
+                }, 600);
+            } else {
+                element.classList.add('wrong');
+                wrongCount++;
+                setTimeout(() => {
+                    element.classList.remove('wrong');
+                }, 500);
+            }
+            
+            // 更新分数显示
+            document.getElementById('correct').textContent = correctCount;
+            document.getElementById('wrong').textContent = wrongCount;
+        }
+
+        // 下一轮
+        function nextRound() {
+            currentRoundIndex++;
+            
+            // 清除所有单词的样式
+            document.querySelectorAll('.word').forEach(word => {
+                word.classList.remove('correct', 'wrong');
+            });
+            
+            displaySentence();
+        }
+
+        // 结束游戏
+        function endGame() {
+            document.querySelector('.round-info').style.display = 'none';
+            document.querySelector('.speaker-container').style.display = 'none';
+            document.querySelector('.sentence').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            document.getElementById('finalScore').textContent = `${correctCount}/${gameData.length}`;
+            document.getElementById('gameOver').style.display = 'block';
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            currentRoundIndex = 0;
+            correctCount = 0;
+            wrongCount = 0;
+            roundAnswered = false;
+            
+            document.querySelector('.round-info').style.display = 'block';
+            document.querySelector('.speaker-container').style.display = 'block';
+            document.querySelector('.sentence').style.display = 'block';
+            document.getElementById('gameOver').style.display = 'none';
+            
+            document.getElementById('correct').textContent = '0';
+            document.getElementById('wrong').textContent = '0';
+            
+            displaySentence();
+        }
+
+        // 初始化游戏
+        async function initGame() {
+            await parseContextData();
+        }
+
+        // 页面加载完成后初始化游戏
+        window.onload = initGame;
+    </script>
+</body>
+</html>
