@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单词复习</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.5rem;
+            color: #666;
+        }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+
+        .word-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #3498db;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .word-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .word-card:nth-child(even) {
+            border-left-color: #e74c3c;
+        }
+
+        .word-card:nth-child(3n) {
+            border-left-color: #2ecc71;
+        }
+
+        .word-card:nth-child(4n) {
+            border-left-color: #f39c12;
+        }
+
+        .word-card:nth-child(5n) {
+            border-left-color: #9b59b6;
+        }
+
+        .word-english {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+        }
+
+        .word-phonetic {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            font-style: italic;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+        }
+
+        .word-chinese {
+            font-size: 1.4rem;
+            color: #34495e;
+            line-height: 1.5;
+            border-top: 2px solid #ecf0f1;
+            padding-top: 15px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .stats-item {
+            display: inline-block;
+            margin: 0 20px;
+            padding: 10px 20px;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            color: #e74c3c;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 768px) {
+            .word-grid {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .word-english {
+                font-size: 1.5rem;
+            }
+            
+            .stats-item {
+                margin: 10px 5px;
+                padding: 8px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 单词复习</h1>
+            <p>掌握每一个单词，成就更好的自己</p>
+        </div>
+        
+        <div id="loading" class="loading">
+            正在加载单词数据...
+        </div>
+        
+        <div id="stats" class="stats" style="display: none;">
+            <div class="stats-item">
+                <div class="stats-number" id="totalWords">0</div>
+                <div class="stats-label">总单词数</div>
+            </div>
+            <div class="stats-item">
+                <div class="stats-number" id="currentDate"></div>
+                <div class="stats-label">复习日期</div>
+            </div>
+        </div>
+        
+        <div id="wordGrid" class="word-grid" style="display: none;"></div>
+        
+        <div id="error" class="error" style="display: none;">
+            加载单词数据失败，请检查网络连接或稍后重试。
+        </div>
+    </div>
+
+    <script>
+        // 设置当前日期
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('zh-CN');
+
+        // 单词翻译字典 - 添加常用单词的音标和中文翻译
+        const wordDict = {
+            'winter': { phonetic: '/ˈwɪntər/', chinese: '冬天' },
+            'sunny': { phonetic: '/ˈsʌni/', chinese: '晴朗的' },
+            'rainy': { phonetic: '/ˈreɪni/', chinese: '下雨的' },
+            'cloudy': { phonetic: '/ˈklaʊdi/', chinese: '多云的' },
+            'snowy': { phonetic: '/ˈsnoʊi/', chinese: '下雪的' },
+            'windy': { phonetic: '/ˈwɪndi/', chinese: '有风的' },
+            'spring': { phonetic: '/sprɪŋ/', chinese: '春天' },
+            'summer': { phonetic: '/ˈsʌmər/', chinese: '夏天' },
+            'autumn': { phonetic: '/ˈɔːtəm/', chinese: '秋天' },
+            'fall': { phonetic: '/fɔːl/', chinese: '秋天' },
+            'hot': { phonetic: '/hɑːt/', chinese: '热的' },
+            'cold': { phonetic: '/koʊld/', chinese: '冷的' },
+            'warm': { phonetic: '/wɔːrm/', chinese: '温暖的' },
+            'cool': { phonetic: '/kuːl/', chinese: '凉爽的' },
+            'weather': { phonetic: '/ˈweðər/', chinese: '天气' },
+            'season': { phonetic: '/ˈsiːzn/', chinese: '季节' },
+            'temperature': { phonetic: '/ˈtemprətʃər/', chinese: '温度' },
+            'humidity': { phonetic: '/hjuːˈmɪdəti/', chinese: '湿度' },
+            'forecast': { phonetic: '/ˈfɔːrkæst/', chinese: '预报' },
+            'rain': { phonetic: '/reɪn/', chinese: '雨' },
+            'snow': { phonetic: '/snoʊ/', chinese: '雪' },
+            'wind': { phonetic: '/wɪnd/', chinese: '风' },
+            'sun': { phonetic: '/sʌn/', chinese: '太阳' },
+            'cloud': { phonetic: '/klaʊd/', chinese: '云' },
+            'storm': { phonetic: '/stɔːrm/', chinese: '暴风雨' },
+            'thunder': { phonetic: '/ˈθʌndər/', chinese: '雷' },
+            'lightning': { phonetic: '/ˈlaɪtnɪŋ/', chinese: '闪电' }
+        };
+
+        // 获取并显示单词数据
+        async function loadWords() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/jamin0929/strawberry/main/03%20phase%20two/%E5%8D%95%E8%AF%8D.txt');
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const text = await response.text();
+                const lines = text.split('\n').filter(line => line.trim());
+                
+                const words = [];
+                
+                // 处理每一行作为一个英文单词
+                for (let line of lines) {
+                    const english = line.trim().toLowerCase();
+                    if (english) {
+                        const wordInfo = wordDict[english] || { 
+                            phonetic: '/需要查询/', 
+                            chinese: '需要查询翻译' 
+                        };
+                        
+                        words.push({
+                            english: line.trim(), // 保持原始大小写
+                            phonetic: wordInfo.phonetic,
+                            chinese: wordInfo.chinese
+                        });
+                    }
+                }
+
+                displayWords(words);
+                
+            } catch (error) {
+                console.error('Error loading words:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+
+        function displayWords(words) {
+            const wordGrid = document.getElementById('wordGrid');
+            const loading = document.getElementById('loading');
+            const stats = document.getElementById('stats');
+            
+            // 更新统计信息
+            document.getElementById('totalWords').textContent = words.length;
+            
+            // 生成单词卡片
+            const cardsHTML = words.map(word => `
+                <div class="word-card">
+                    <div class="word-english">${word.english}</div>
+                    <div class="word-phonetic">${word.phonetic}</div>
+                    <div class="word-chinese">${word.chinese}</div>
+                </div>
+            `).join('');
+            
+            wordGrid.innerHTML = cardsHTML;
+            
+            // 显示内容，隐藏加载提示
+            loading.style.display = 'none';
+            stats.style.display = 'block';
+            wordGrid.style.display = 'grid';
+        }
+
+        // 页面加载完成后获取单词数据
+        window.addEventListener('load', loadWords);
+    </script>
+</body>
+</html>
