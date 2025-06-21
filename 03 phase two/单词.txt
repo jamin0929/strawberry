@@ -1,10 +1,6 @@
-listening
-reading
 cat
-winter
-sunny
-rainy
-cloudy
-snowy
-windy
-
+happy
+card
+book
+bird
+ruler
