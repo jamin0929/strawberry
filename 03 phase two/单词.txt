@@ -1,6 +1,3 @@
-cat
-happy
-card
-book
-bird
-ruler
+can't
+two
+apple
