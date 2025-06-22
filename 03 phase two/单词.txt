@@ -1,6 +1,6 @@
-can
-bear
 cat
-car
-some
-here
+dog
+horse
+pig
+monkey
+mouse
