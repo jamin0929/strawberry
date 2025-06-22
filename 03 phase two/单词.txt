@@ -1,3 +1,6 @@
-can't
-two
-apple
+can
+bear
+cat
+car
+some
+here
