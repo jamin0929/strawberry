@@ -1,6 +1,6 @@
-cat
-dog
-horse
-pig
-monkey
-mouse
+flower
+bamboo
+mushroom
+apple
+grapes
+tree
