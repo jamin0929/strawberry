@@ -1,0 +1,39 @@
+htmlpreview.github.io 是一个在线服务，用于直接在浏览器中预览托管在 GitHub 上的 HTML 文件。
+
+## 主要功能
+
+这个服务解决了 GitHub 的一个限制问题：虽然 GitHub 可以托管 HTML 文件，但直接访问这些文件时，浏览器会显示源代码而不是渲染后的页面。htmlpreview.github.io 充当代理服务器，获取 GitHub 上的 HTML 文件并在浏览器中正确渲染。
+
+## 使用方法
+
+基本用法很简单，只需要在 GitHub 文件 URL 前面加上 htmlpreview.github.io 的前缀：
+
+```
+https://htmlpreview.github.io/?https://github.com/用户名/仓库名/blob/分支名/文件路径.html
+```
+
+具体步骤：
+1. 找到你想预览的 GitHub HTML 文件的完整 URL
+2. 在该 URL 前面添加 `https://htmlpreview.github.io/?`
+3. 在浏览器中访问组合后的 URL
+
+## 实际例子
+
+假设你有一个 HTML 文件位于：
+```
+https://github.com/username/myproject/blob/main/index.html
+```
+
+预览 URL 就是：
+```
+https://htmlpreview.github.io/?https://github.com/username/myproject/blob/main/index.html
+```
+
+## 注意事项
+
+- 只适用于公开的 GitHub 仓库
+- 对于包含外部资源（如 CSS、JS、图片）的 HTML 文件，这些资源的路径需要是相对路径或绝对路径
+- 服务可能会有一些限制，比如文件大小或请求频率
+- 主要用于快速预览和演示，不适合作为生产环境的托管方案
+
+这个服务特别适合用于展示 HTML 项目原型、教学演示或与他人分享静态网页效果。
