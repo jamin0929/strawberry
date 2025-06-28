@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鼹鼠挖矿英语学习游戏</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #8B4513 0%, #654321 50%, #2F1B14 100%);
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+        }
+
+        .control-panel {
+            width: 200px;
+            background: rgba(139, 69, 19, 0.9);
+            padding: 20px;
+            border-right: 3px solid #654321;
+        }
+
+        .control-panel h3 {
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .audio-button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: 2px solid #FF8C00;
+            border-radius: 8px;
+            color: #8B4513;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .audio-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .game-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #8B4513 0%, #654321 50%, #2F1B14 100%);
+        }
+
+        .mole {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #8B4513;
+            border-radius: 50% 50% 40% 40%;
+            transition: all 0.2s;
+            z-index: 10;
+            border: 2px solid #654321;
+        }
+
+        .mole::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: 6px;
+            height: 6px;
+            background: black;
+            border-radius: 50%;
+            box-shadow: 14px 0 black;
+        }
+
+        .mole::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 10px;
+            height: 3px;
+            background: black;
+            border-radius: 50%;
+        }
+
+        .pickaxe {
+            position: absolute;
+            top: -15px;
+            right: -10px;
+            width: 20px;
+            height: 30px;
+            background: linear-gradient(45deg, #CD853F 0%, #8B4513 50%, #2F4F4F 100%);
+            transform: rotate(45deg);
+            border-radius: 2px;
+        }
+
+        .word {
+            position: absolute;
+            padding: 4px 6px;
+            background: none;
+            border: none;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.3);
+            line-height: 1.2;
+        }
+
+        .word:hover {
+            color: #333;
+            transform: scale(1.1);
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+        }
+
+        .word.dug {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .diamond {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #E0E0E0, #B0E0E6, #87CEEB, #4169E1);
+            transform: rotate(45deg);
+            border-radius: 4px;
+            animation: sparkle 1s ease-in-out;
+            z-index: 20;
+        }
+
+        .diamond::before,
+        .diamond::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.8), transparent);
+            border-radius: 4px;
+        }
+
+        .diamond::after {
+            animation: shine 1s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0% { transform: rotate(45deg) scale(0); opacity: 0; }
+            50% { transform: rotate(225deg) scale(1.2); opacity: 1; }
+            100% { transform: rotate(405deg) scale(1); opacity: 1; }
+        }
+
+        @keyframes shine {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .score-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #8B4513;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            border: 3px solid #8B4513;
+            text-align: center;
+            z-index: 100;
+            display: none;
+        }
+
+        .game-over button {
+            padding: 10px 20px;
+            margin: 10px;
+            background: linear-gradient(45deg, #32CD32, #228B22);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .game-over button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid #8B4513;
+            max-width: 300px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 18px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">正在加载游戏数据...</div>
+    
+    <div class="game-container" id="gameContainer" style="display: none;">
+        <div class="control-panel">
+            <h3>🎵 发音按钮</h3>
+            <div id="audioButtons"></div>
+        </div>
+        
+        <div class="game-area">
+            <div class="mole" id="mole">
+                <div class="pickaxe"></div>
+            </div>
+            <div id="words"></div>
+            <div id="diamonds"></div>
+            
+            <div class="score-panel">
+                <div>💎 钻石: <span id="score">0</span></div>
+                <div>🎯 剩余: <span id="remaining">0</span></div>
+            </div>
+            
+            <div class="instructions">
+                <h4>游戏说明:</h4>
+                <p>• 用方向键移动鼹鼠</p>
+                <p>• 点击发音按钮听单词</p>
+                <p>• 走到对应单词附近点击挖掘</p>
+                <p>• 找对了就有钻石！</p>
+            </div>
+        </div>
+        
+        <div class="game-over" id="gameOver">
+            <h2>🎉 挖矿完成！</h2>
+            <p>恭喜你找到了 <span id="finalScore">0</span> 颗钻石！</p>
+            <p>准备好迎接下一个挑战了吗？</p>
+            <button onclick="nextLevel()">🎯 下一个挑战</button>
+            <button onclick="restartGame()">🔄 重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        let gameData = {
+            words: [],
+            sentences: [],
+            pronunciation: []
+        };
+
+        let currentLevel = 1;
+        let score = 0;
+        let currentWord = '';
+        let molePosition = { x: 400, y: 300 };
+        let wordsOnGround = [];
+        let dugWords = new Set();
+
+        // 加载游戏数据
+        async function loadGameData() {
+            try {
+                // 加载单词
+                const wordsResponse = await fetch('https://raw.githubusercontent.com/jamin0929/strawberry/main/03%20phase%20two/单词.txt');
+                const wordsText = await wordsResponse.text();
+                gameData.words = wordsText.split('\n').filter(word => word.trim());
+
+                // 加载句子
+                const sentencesResponse = await fetch('https://raw.githubusercontent.com/jamin0929/strawberry/main/03%20phase%20two/句子.txt');
+                const sentencesText = await sentencesResponse.text();
+                gameData.sentences = sentencesText.split('\n').filter(sentence => sentence.trim());
+
+                // 加载发音代码
+                const pronunciationResponse = await fetch('https://raw.githubusercontent.com/jamin0929/strawberry/main/03%20phase%20two/发音小代码.txt');
+                const pronunciationText = await pronunciationResponse.text();
+                gameData.pronunciation = pronunciationText.split('\n').filter(p => p.trim());
+
+                console.log('加载的数据:', gameData);
+                
+                // 隐藏加载界面，显示游戏
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'flex';
+                
+                // 初始化游戏
+                initGame();
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                document.getElementById('loading').innerHTML = '数据加载失败，请检查网络连接';
+            }
+        }
+
+        // 初始化游戏
+        function initGame() {
+            createAudioButtons();
+            // 延迟一下确保DOM渲染完成
+            setTimeout(() => {
+                placeWordsOnGround();
+                updateMolePosition();
+                updateScore();
+            }, 100);
+        }
+
+        // 创建发音按钮
+        function createAudioButtons() {
+            const container = document.getElementById('audioButtons');
+            container.innerHTML = '';
+            
+            gameData.words.forEach((word, index) => {
+                const button = document.createElement('button');
+                button.className = 'audio-button';
+                button.innerHTML = `🔊 单词 ${index + 1}`;
+                button.onclick = () => playWord(word, index);
+                container.appendChild(button);
+            });
+        }
+
+        // 播放单词发音并设置当前单词
+        function playWord(word, index) {
+            currentWord = word.toLowerCase().trim();
+            
+            // 使用Web Speech API进行发音
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.8;
+                speechSynthesis.speak(utterance);
+            }
+            
+            // 高亮当前选中的按钮
+            document.querySelectorAll('.audio-button').forEach(btn => {
+                btn.style.background = 'linear-gradient(45deg, #FFD700, #FFA500)';
+            });
+            event.target.style.background = 'linear-gradient(45deg, #FF69B4, #FF1493)';
+        }
+
+        // 将句子拆分为单词，保留标点
+        function splitSentenceToWords(sentence) {
+            // 保留标点符号，按空格分割
+            return sentence.split(/(\s+)/).filter(part => part.trim().length > 0);
+        }
+
+        // 计算自适应字体大小
+        function calculateFontSize() {
+            const gameArea = document.querySelector('.game-area');
+            const availableWidth = gameArea.offsetWidth - 50; // 留出边距
+            const availableHeight = gameArea.offsetHeight - 50;
+            
+            // 计算总文本长度
+            const totalText = gameData.sentences.join(' ');
+            const textLength = totalText.length;
+            
+            // 根据可用空间和文本量计算字体大小
+            const baseSize = Math.sqrt((availableWidth * availableHeight) / textLength);
+            
+            // 限制字体大小范围：最小14px，最大28px
+            const fontSize = Math.max(14, Math.min(28, baseSize * 0.8));
+            
+            return Math.floor(fontSize);
+        }
+
+        // 在地面放置单词
+        function placeWordsOnGround() {
+            const wordsContainer = document.getElementById('words');
+            wordsContainer.innerHTML = '';
+            wordsOnGround = [];
+            dugWords.clear();
+            
+            const gameArea = document.querySelector('.game-area');
+            const containerWidth = gameArea.offsetWidth - 160; // 留出更多边距
+            const containerHeight = gameArea.offsetHeight - 160;
+            const fontSize = calculateFontSize();
+            
+            let allParts = [];
+            let sentenceStarts = [];
+            
+            // 收集所有文本部分
+            gameData.sentences.forEach((sentence, sentenceIndex) => {
+                sentenceStarts.push(allParts.length);
+                const parts = splitSentenceToWords(sentence);
+                allParts = allParts.concat(parts.map(part => ({
+                    text: part,
+                    sentenceIndex: sentenceIndex
+                })));
+            });
+            
+            const lineHeight = fontSize * 1.6; // 增加行间距
+            const wordSpacing = fontSize * 0.6; // 增加单词间距
+            
+            // 先计算所有行的内容和宽度
+            let lines = [];
+            let currentLine = [];
+            let currentLineWidth = 0;
+            
+            allParts.forEach((partData) => {
+                const part = partData.text;
+                if (part.trim() === '') return;
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                context.font = `${fontSize}px Arial`;
+                const textWidth = context.measureText(part).width;
+                
+                // 检查是否需要换行
+                if (currentLineWidth + textWidth + wordSpacing > containerWidth && currentLine.length > 0) {
+                    lines.push({
+                        parts: [...currentLine],
+                        width: currentLineWidth - wordSpacing
+                    });
+                    currentLine = [];
+                    currentLineWidth = 0;
+                }
+                
+                currentLine.push({
+                    ...partData,
+                    width: textWidth
+                });
+                currentLineWidth += textWidth + wordSpacing;
+            });
+            
+            // 添加最后一行
+            if (currentLine.length > 0) {
+                lines.push({
+                    parts: [...currentLine],
+                    width: currentLineWidth - wordSpacing
+                });
+            }
+            
+            // 计算总文本块的高度
+            const totalTextHeight = lines.length * lineHeight;
+            
+            // 居中起始位置
+            const startX = (gameArea.offsetWidth - containerWidth) / 2;
+            const startY = (gameArea.offsetHeight - totalTextHeight) / 2;
+            
+            // 渲染每一行
+            lines.forEach((line, lineIndex) => {
+                const lineY = startY + lineIndex * lineHeight;
+                // 居中每一行
+                const lineStartX = startX + (containerWidth - line.width) / 2;
+                
+                let currentX = lineStartX;
+                
+                line.parts.forEach((partData) => {
+                    const part = partData.text;
+                    
+                    const wordDiv = document.createElement('div');
+                    wordDiv.className = 'word';
+                    wordDiv.textContent = part;
+                    wordDiv.style.fontSize = fontSize + 'px';
+                    
+                    // 只为真正的单词设置点击事件和数据
+                    const cleanWord = part.toLowerCase().replace(/[^\w]/g, '');
+                    if (cleanWord.length > 0) {
+                        wordDiv.dataset.word = cleanWord;
+                        wordDiv.dataset.sentence = partData.sentenceIndex;
+                        wordDiv.onclick = () => digWord(wordDiv);
+                        
+                        wordsOnGround.push({
+                            element: wordDiv,
+                            word: cleanWord,
+                            x: currentX,
+                            y: lineY
+                        });
+                    } else {
+                        // 标点符号不可点击
+                        wordDiv.style.pointerEvents = 'none';
+                        wordDiv.style.opacity = '0.8';
+                    }
+                    
+                    wordDiv.style.left = currentX + 'px';
+                    wordDiv.style.top = lineY + 'px';
+                    wordDiv.style.display = 'inline-block';
+                    
+                    wordsContainer.appendChild(wordDiv);
+                    currentX += partData.width + wordSpacing;
+                });
+            });
+        }
+
+        // 挖掘单词
+        function digWord(wordElement) {
+            const wordData = wordElement.dataset.word.toLowerCase().trim();
+            const distance = getDistance(
+                molePosition.x + 25, 
+                molePosition.y + 25,
+                parseInt(wordElement.style.left) + wordElement.offsetWidth/2,
+                parseInt(wordElement.style.top) + wordElement.offsetHeight/2
+            );
+            
+            // 检查鼹鼠是否足够接近
+            if (distance > 80) {
+                return; // 距离太远，无法挖掘
+            }
+            
+            const wordKey = wordData + '_' + wordElement.style.left + '_' + wordElement.style.top;
+            if (dugWords.has(wordKey)) {
+                return; // 已经挖过了
+            }
+            
+            dugWords.add(wordKey);
+            wordElement.classList.add('dug');
+            
+            // 检查是否正确
+            if (currentWord && currentWord === wordData) {
+                score++;
+                createDiamond(
+                    parseInt(wordElement.style.left) + wordElement.offsetWidth/2,
+                    parseInt(wordElement.style.top) + wordElement.offsetHeight/2
+                );
+            }
+            
+            updateScore();
+            checkGameEnd();
+        }
+
+        // 创建钻石
+        function createDiamond(x, y) {
+            const diamond = document.createElement('div');
+            diamond.className = 'diamond';
+            diamond.style.left = (x - 15) + 'px';
+            diamond.style.top = (y - 15) + 'px';
+            
+            document.getElementById('diamonds').appendChild(diamond);
+            
+            // 3秒后移除钻石
+            setTimeout(() => {
+                if (diamond.parentNode) {
+                    diamond.parentNode.removeChild(diamond);
+                }
+            }, 3000);
+        }
+
+        // 计算距离
+        function getDistance(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        }
+
+        // 更新鼹鼠位置
+        function updateMolePosition() {
+            const mole = document.getElementById('mole');
+            mole.style.left = molePosition.x + 'px';
+            mole.style.top = molePosition.y + 'px';
+        }
+
+        // 更新分数
+        function updateScore() {
+            document.getElementById('score').textContent = score;
+            // 只计算真正的单词数量（不包括标点符号）
+            const totalTargetWords = gameData.words.length;
+            document.getElementById('remaining').textContent = totalTargetWords - score;
+        }
+
+        // 检查游戏结束
+        function checkGameEnd() {
+            // 当获得的钻石数等于目标单词数时游戏结束
+            if (score === gameData.words.length) {
+                setTimeout(() => {
+                    document.getElementById('finalScore').textContent = score;
+                    document.getElementById('gameOver').style.display = 'block';
+                }, 1000);
+            }
+        }
+
+        // 键盘控制相关变量
+        let keysPressed = {};
+        let moveInterval = null;
+        const moveSpeed = 3; // 每次移动的像素数
+        const moveDelay = 16; // 移动间隔(ms)，约60FPS
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            // 防止按键重复触发
+            if (keysPressed[e.key]) return;
+            
+            keysPressed[e.key] = true;
+            
+            // 开始移动
+            if (!moveInterval && (e.key.startsWith('Arrow'))) {
+                moveInterval = setInterval(moveMole, moveDelay);
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keysPressed[e.key] = false;
+            
+            // 检查是否还有方向键被按下
+            const hasArrowKeys = Object.keys(keysPressed).some(key => 
+                key.startsWith('Arrow') && keysPressed[key]
+            );
+            
+            // 如果没有方向键被按下，停止移动
+            if (!hasArrowKeys && moveInterval) {
+                clearInterval(moveInterval);
+                moveInterval = null;
+            }
+        });
+
+        // 移动鼹鼠函数
+        function moveMole() {
+            const gameArea = document.querySelector('.game-area');
+            if (!gameArea) return;
+            
+            const maxX = gameArea.offsetWidth - 50;
+            const maxY = gameArea.offsetHeight - 50;
+            
+            let moved = false;
+            
+            if (keysPressed['ArrowUp']) {
+                molePosition.y = Math.max(0, molePosition.y - moveSpeed);
+                moved = true;
+            }
+            if (keysPressed['ArrowDown']) {
+                molePosition.y = Math.min(maxY, molePosition.y + moveSpeed);
+                moved = true;
+            }
+            if (keysPressed['ArrowLeft']) {
+                molePosition.x = Math.max(0, molePosition.x - moveSpeed);
+                moved = true;
+            }
+            if (keysPressed['ArrowRight']) {
+                molePosition.x = Math.min(maxX, molePosition.x + moveSpeed);
+                moved = true;
+            }
+            
+            if (moved) {
+                updateMolePosition();
+            }
+        }
+
+        // 下一关
+        function nextLevel() {
+            currentLevel++;
+            score = 0;
+            currentWord = '';
+            
+            // 清理移动相关状态
+            keysPressed = {};
+            if (moveInterval) {
+                clearInterval(moveInterval);
+                moveInterval = null;
+            }
+            
+            document.getElementById('gameOver').style.display = 'none';
+            initGame();
+        }
+
+        // 重新开始
+        function restartGame() {
+            currentLevel = 1;
+            score = 0;
+            currentWord = '';
+            
+            // 清理移动相关状态
+            keysPressed = {};
+            if (moveInterval) {
+                clearInterval(moveInterval);
+                moveInterval = null;
+            }
+            
+            document.getElementById('gameOver').style.display = 'none';
+            initGame();
+        }
+
+        // 启动游戏
+        loadGameData();
+    </script>
+</body>
+</html>
